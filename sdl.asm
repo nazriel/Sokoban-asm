@@ -9,17 +9,23 @@
 
 ; exports
 global initSDL
+global handleEvent
 
 ; imports - program
 extern screenWidth
 extern screenHeight
 extern gameTitle
+extern keys
 
 ; imports - sdl
 extern SDL_Init
 extern SDL_SetVideoMode
 extern SDL_EnableKeyRepeat
 extern SDL_WM_SetCaption
+extern SDL_PollEvent
+
+; imports - libc
+extern printf
 
 section .text
 [bits 64]
@@ -49,3 +55,38 @@ initSDL:
 	ret
 
 quitSDL:
+
+handleEvent:
+	mov RBP, RSP
+	sub RSP, 0x20 ; SDL_Event [ RBP + 24 ]
+	
+
+	loop:
+		lea RAX, [RBP-0x20]
+		mov RDI, RAX
+		call SDL_PollEvent
+		and RAX, RAX
+		jz true 
+
+		movzx RAX, byte [RBP-0x20]	
+		cmp RAX, 0x2
+		je handleKeyDown
+		jmp loop
+	false:
+		add RSP, 0x20
+		xor RAX, RAX
+		ret
+	true:
+		add RSP, 0x20
+		mov RAX, 1
+		ret
+	
+handleKeyDown:
+	add RSP, 0x20
+	mov RDI, fmt
+	call printf
+	ret
+
+section .data
+	;event:		dq 	0
+	fmt:		db 	"Key down", 0xA, 0
