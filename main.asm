@@ -20,6 +20,7 @@ global keys
 extern initOpenGL
 extern initSDL
 extern handleEvent
+extern loadMap
 
 ; imports - libc
 extern exit
@@ -31,11 +32,14 @@ section .data
 	screenRatio: 	equ screenWidth/screenHeight
 	gameTitle:	db "Wanna be sokoban", 0
 	keys:		times 323 db 0
-
+	mapFile:	db "maps/1.txt", 0
+	
 section .text
 main:
 	call initSDL
 	call initOpenGL
+	mov RDI, mapFile
+	call loadMap
 events:
 	call handleEvent
 	and RAX, RAX
